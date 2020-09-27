@@ -66,7 +66,7 @@ def read_excel_xlsx(path, sheet_name):
             download_save(param, row[4].value)
             # 不是因为太快了，而是因为没有采用IP登录，使用浏览器下载规避登录问题
             # 时间设置根据网络判断，否则可能会出现命名错误问题
-            time.sleep(120)
+            time.sleep(60)
             # 这里给文件降序排列改个名
             dir_list = get_file_list(folder_path)
             # 在这里进行文件转移和更名

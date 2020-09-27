@@ -5,6 +5,7 @@ import webbrowser
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import openpyxl
+import time
 
 proxies = {
     'https': 'https://127.0.0.1:58591',
@@ -16,8 +17,9 @@ head = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
     'x-requested-with': 'XMLHttpRequest'
 }
-# as_vis 防止引用出现报错， 自2016年起，测试词 航空发动机 数据融合
-url = "https://scholar.google.com/scholar?as_vis=1&as_ylo=2016&q=航空发动机 数据融合"
+# as_vis 防止索引到引用而出现报错， 自2016年起，测试词 航空发动机 数据融合 本次测试搜集50篇文献，实收48篇，下载26篇，仅屏蔽部分无法搜到的错误 20200926
+# as_vis 防止索引到引用而出现报错， 自2016年起，测试词 时序数据库+大数据+模型 本次测试搜集50篇文献，实收48篇，下载26篇，仅屏蔽部分无法搜到的错误 20200926
+url = "https://scholar.google.com/scholar?as_vis=1&as_ylo=2016&q=时序数据库+大数据+模型"
 
 
 # url = "https://www.google.com"
@@ -25,6 +27,8 @@ url = "https://scholar.google.com/scholar?as_vis=1&as_ylo=2016&q=航空发动机
 # 搜索谷歌某页结果，传入start，以0开始，10为步长
 def print_hi(start):
     response = requests.get(url + "&start=" + str(start), proxies=proxies, headers=head)
+    # 由于部分VPN节点的问题，这里可能获取不到结果，而是显示：请证明你不是机器人
+    time.sleep(5)
     # 查看响应状态码
     status_code = response.status_code
     # 使用BeautifulSoup解析代码,并锁定页码指定标签内容
@@ -34,7 +38,7 @@ def print_hi(start):
         b_tag.replace_with(b_tag.contents[0])
     for br_tag in content.findAll('br'):
         br_tag.replace_with('')
-    print(status_code)
+    # print(status_code)
     title = ''
     author = ''
     abstract = ''
@@ -59,6 +63,7 @@ def print_hi(start):
             'url': result.find("a")["href"]
         }
         res.append(epaper)
+    print(res)
     return res
 
 
@@ -82,47 +87,51 @@ def write_excel_xlsx(path, sheet_name, value):
     sheet.title = sheet_name
     for i in range(0, index):
         for j in range(0, len(value[i])):
-            sheet.cell(row=i+1, column=j+1, value=str(value[i][j]))
+            sheet.cell(row=i + 1, column=j + 1, value=str(value[i][j]))
     workbook.save(path)
     print("xlsx格式表格写入数据成功！")
 
 
 # 根据名字下载论文
 def download_paper(title):
+    url = "https://eng.oversea.cnki.net/kns55/brief/result.aspx?txt_1_value1=" + title + "&txt_1_sel=%E9%A2%98%E5%90%8D&dbPrefix=SCDB&db_opt=%E4" \
+                                                                                         "%B8%AD%E5%9B%BD%E5%AD%A6%E6%9C%AF%E6%96%87%E7%8C%AE%E7%BD%91%E7%BB%9C%E5%87%BA%E7%89%88%E6%80%BB%E5%BA%93" \
+                                                                                         "&db_value=%E4%B8%AD%E5%9B%BD%E6%9C%9F%E5%88%8A%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5" \
+                                                                                         "%9B%BD%E5%8D%9A%E5%A3%AB%E5%AD%A6%E4%BD%8D%E8%AE%BA%E6%96%87%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93" \
+                                                                                         "%2C%E4%B8%AD%E5%9B%BD%E4%BC%98%E7%A7%80%E7%A1%95%E5%A3%AB%E5%AD%A6%E4%BD%8D%E8%AE%BA%E6%96%87%E5%85%A8%E6" \
+                                                                                         "%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5%9B%BD%E9%87%8D%E8%A6%81%E4%BC%9A%E8%AE%AE%E8%AE%BA%E6%96" \
+                                                                                         "%87%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E5%9B%BD%E9%99%85%E4%BC%9A%E8%AE%AE%E8%AE%BA%E6%96%87" \
+                                                                                         "%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5%9B%BD%E9%87%8D%E8%A6%81%E6%8A%A5%E7%BA%B8%E5" \
+                                                                                         "%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5%9B%BD%E5%B9%B4%E9%89%B4%E7%BD%91%E7%BB%9C%E5%87" \
+                                                                                         "%BA%E7%89%88%E6%80%BB%E5%BA%93&search-action=brief%2Fresult.aspx "
+    # 整个程序仅使用一个webdriver会导致一段时间后浏览器卡死，并没有明显加速提取
     # browser = webdriver.Chrome()
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     # 开启静默模式
     browser = webdriver.Chrome(options=chrome_options)
-    url = "https://eng.oversea.cnki.net/kns55/brief/result.aspx?txt_1_value1="+title+"&txt_1_sel=%E9%A2%98%E5%90%8D&dbPrefix=SCDB&db_opt=%E4" \
-          "%B8%AD%E5%9B%BD%E5%AD%A6%E6%9C%AF%E6%96%87%E7%8C%AE%E7%BD%91%E7%BB%9C%E5%87%BA%E7%89%88%E6%80%BB%E5%BA%93" \
-          "&db_value=%E4%B8%AD%E5%9B%BD%E6%9C%9F%E5%88%8A%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5" \
-          "%9B%BD%E5%8D%9A%E5%A3%AB%E5%AD%A6%E4%BD%8D%E8%AE%BA%E6%96%87%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93" \
-          "%2C%E4%B8%AD%E5%9B%BD%E4%BC%98%E7%A7%80%E7%A1%95%E5%A3%AB%E5%AD%A6%E4%BD%8D%E8%AE%BA%E6%96%87%E5%85%A8%E6" \
-          "%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5%9B%BD%E9%87%8D%E8%A6%81%E4%BC%9A%E8%AE%AE%E8%AE%BA%E6%96" \
-          "%87%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E5%9B%BD%E9%99%85%E4%BC%9A%E8%AE%AE%E8%AE%BA%E6%96%87" \
-          "%E5%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5%9B%BD%E9%87%8D%E8%A6%81%E6%8A%A5%E7%BA%B8%E5" \
-          "%85%A8%E6%96%87%E6%95%B0%E6%8D%AE%E5%BA%93%2C%E4%B8%AD%E5%9B%BD%E5%B9%B4%E9%89%B4%E7%BD%91%E7%BB%9C%E5%87" \
-          "%BA%E7%89%88%E6%80%BB%E5%BA%93&search-action=brief%2Fresult.aspx "
     browser.get(url)  # 打开浏览器预设网址
-    browser.minimize_window()
     browser.get(
         "https://eng.oversea.cnki.net/kns55/brief/brief.aspx?pagename=ASP.brief_result_aspx&dbPrefix=SCDB&dbCatalog=%e4%b8%ad%e5%9b%bd%e5%ad%a6%e6%9c%af%e6%96%87%e7%8c%ae%e7%bd%91%e7%bb%9c%e5%87%ba%e7%89%88%e6%80%bb%e5%ba%93&ConfigFile=SCDB.xml&research=off&t=1601044487255")
     # print(browser.page_source)  # 打印网页源代码
     content = bs4.BeautifulSoup(browser.page_source, "lxml")
     # print(content)
-    firstpaper = content.find("table", attrs={"class": "GridTableContent"}).findAll('tr')[1]
-    pmsg = firstpaper.findAll("td")
-    # 链接 题目 作者 机构 年份 水平
-    dlink = "https://eng.oversea.cnki.net/kns55/brief/" + pmsg[1].contents[0]["href"]
-    title = pmsg[2].find('font', attrs={"class": "Mark"}).get_text().replace("\n", "").replace(" ", "")
-    url_for_abs = "https://eng.oversea.cnki.net"+pmsg[2].contents[1]['href']
-    author = pmsg[3].get_text().replace("\n", "").replace(" ", "")
-    institue = pmsg[4].get_text().replace("\n", "").replace(" ", "")
-    year = pmsg[5].get_text().replace("\n", "").replace(" ", "")
-    ptype = pmsg[6].get_text().replace("\n", "").replace(" ", "")
-    print(title, author, institue, year, ptype, url_for_abs)
-    new_abst = get_abst(url_for_abs)
+    try:
+        firstpaper = content.find("table", attrs={"class": "GridTableContent"}).findAll('tr')[1]
+        pmsg = firstpaper.findAll("td")
+        # 链接 题目 作者 机构 年份 水平
+        dlink = "https://eng.oversea.cnki.net/kns55/brief/" + pmsg[1].contents[0]["href"]
+        title = pmsg[2].find('font', attrs={"class": "Mark"}).get_text().replace("\n", "").replace(" ", "")
+        url_for_abs = "https://eng.oversea.cnki.net" + pmsg[2].contents[1]['href']
+        author = pmsg[3].get_text().replace("\n", "").replace(" ", "")
+        institue = pmsg[4].get_text().replace("\n", "").replace(" ", "")
+        year = pmsg[5].get_text().replace("\n", "").replace(" ", "")
+        ptype = pmsg[6].get_text().replace("\n", "").replace(" ", "")
+        print(title, author, institue, year, ptype, url_for_abs)
+        new_abst = get_abst(url_for_abs)
+    except:
+        # print(content)
+        pass
     browser.close()  # 关闭浏览器
     return {"dlink": dlink, "title": title, "abst": new_abst}
 
@@ -130,11 +139,11 @@ def download_paper(title):
 if __name__ == '__main__':
     # 这里是要查询的谷歌学术页数
     res = print_hi(0)
-    # res = res + print_hi(10)
-    # res = res + print_hi(20)
-    # res = res + print_hi(30)
-    # res = res + print_hi(40)
-    # res = res + print_hi(50)
+    res = res + print_hi(10)
+    res = res + print_hi(20)
+    res = res + print_hi(30)
+    res = res + print_hi(40)
+    res = res + print_hi(50)
 
     # 命名生成的html
     GEN_HTML = "test.html"
@@ -146,15 +155,20 @@ if __name__ == '__main__':
     para = ''
     value_for_xlsx = []
     for paper in res:
-        # 获取完整摘要
-        # paper['abstract'] = get_abst(paper['url'])
-        idx = idx + 1
-        dmsg = download_paper(paper['title'])
-        para = para + ("<p>标题：<a href='%s'>%s</a> 作者：%s <p>摘要：%s</p><p>%d可下载的标题：<a "
-                       "href='%s'>%s</a></p><p>知网摘要：%s</p></p>" % (paper['url'], paper['title'], paper['author'],
-                                                                   paper['abstract'], idx, dmsg['dlink'],
-                                                                   dmsg['title'], dmsg['abst']))
-        value_for_xlsx.append([paper['url'], paper['title'], paper['author'], paper['abstract'], dmsg['dlink'], dmsg['title'], dmsg['abst'], 0])
+        # 有些条目失败了，但是还没来得及研究为啥，当前词19号异常 基于一致性检验的航空发动机剩余寿命预测 与 融合多传感器数据的发动机剩余寿命预测方法 之间
+        # 二次搜索问题挺多，得看看为什么几十篇文献没找到
+        try:
+            idx = idx + 1
+            dmsg = download_paper(paper['title'])
+            para = para + ("<p>标题：<a href='%s'>%s</a> 作者：%s <p>摘要：%s</p><p>%d可下载的标题：<a "
+                           "href='%s'>%s</a></p><p>知网摘要：%s</p></p>" % (paper['url'], paper['title'], paper['author'],
+                                                                       paper['abstract'], idx, dmsg['dlink'],
+                                                                       dmsg['title'], dmsg['abst']))
+            value_for_xlsx.append(
+                [paper['url'], paper['title'], paper['author'], paper['abstract'], dmsg['dlink'], dmsg['title'],
+                 dmsg['abst'], 0])
+        except:
+            print("下载失败的：" + paper['title'])
 
     book_name_xlsx = 'xlsx格式测试工作簿.xlsx'
     sheet_name_xlsx = 'xlsx格式测试表'
