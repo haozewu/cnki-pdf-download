@@ -9,17 +9,17 @@
 
 1. 压缩包内有下载好的 CRX 文件，将后缀名 .crx 修改为 .zip，然后解压到一个文件夹中。
 
-![image-20210325083314952](C:\Users\haoze\Documents\GitHub\paperDownload\asserts\image-20210325083314952.png)
+![image-20210325083314952](./asserts/image-20210325083314952.png)
 
 2. 进入 Chrome 扩展程序管理页面（选项 - 更多工具 - 扩展程序）。或直接在地址栏输入`chrome://extensions/`进入浏览器拓展管理页。
 
 3. 页面右上方打开 “开发者模式”。
 
-![image-20210325083643112](C:\Users\haoze\Documents\GitHub\paperDownload\asserts\image-20210325083643112.png)
+![image-20210325083643112](./asserts/image-20210325083643112.png)
 
 4. 左上方加载已解压的扩展程序 -> 选择刚才解压的文件夹，完成。
 
-![image-20210325083806441](C:\Users\haoze\Documents\GitHub\paperDownload\asserts\image-20210325083806441.png)
+![image-20210325083806441](./asserts/image-20210325083806441.png)
 
 安装好工具以后，打开知网，即可按照以前下载caj的方式下载pdf文件（主要是硕博文献全本下载）。
 
